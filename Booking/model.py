@@ -1,12 +1,10 @@
-
-
 from sqlalchemy import Column, Integer, Date, Numeric
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # З'єднання з базою даних
-DATABASE_URL = 'postgresql://postgres:1@localhost:5432/postgres'  # Приклад URL для PostgreSQL
+DATABASE_URL = 'postgresql://postgres:1@localhost:5432/postgres'
 engine = create_engine(DATABASE_URL)
 
 # Створення базового класу, від якого будуть наслідуватися всі моделі
@@ -14,7 +12,7 @@ Base = declarative_base()
 
 # Створення сесії для взаємодії з базою даних
 Session = sessionmaker()
-session = Session()
+
 
 class BookingTicket(Base):
     __tablename__ = 'booking_ticket'
@@ -33,6 +31,10 @@ class ModelBookingTicket:
         self.conn = db_model.conn
         #self.session = db_model.session
         self.engine = create_engine(DATABASE_URL)
+        #self.session = Session()
+        #self.engine = db_model.engine
+        #Session = sessionmaker()
+        self.session = Session.configure(bind=self.engine)
         self.session = Session()
     # def add_booking_ticket(self, booking_id, client_id, room_number, booking_start_date, booking_end_date, price):
     #     c = self.conn.cursor()
@@ -79,10 +81,6 @@ class ModelBookingTicket:
             return False
 
 
-    def get_all_booking_tickets(self):
-        c = self.conn.cursor()
-        c.execute('SELECT * FROM booking_ticket')
-        return c.fetchall()
 
     def update_booking_ticket(self, booking_id, client_id, room_number, booking_start_date, booking_end_date, price):
         try:
@@ -153,6 +151,13 @@ class ModelBookingTicket:
     #         self.conn.rollback()
     #         print(f"Error when deleting a reservation: {str(e)}")
     #         return False   # Returns False if insertion fails
+
+
+
+    def get_all_booking_tickets(self):
+        c = self.conn.cursor()
+        c.execute('SELECT * FROM booking_ticket')
+        return c.fetchall()
 
     def check_booking_existence(self, booking_id):
         c = self.conn.cursor()

@@ -3,14 +3,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# З'єднання з базою даних
-DATABASE_URL = 'postgresql://postgres:1@localhost:5432/postgres'  # Приклад URL для PostgreSQL
+# Connecting to the database
+DATABASE_URL = 'postgresql://postgres:1@localhost:5432/postgres'
 engine = create_engine(DATABASE_URL)
 
-# Створення базового класу, від якого будуть наслідуватися всі моделі
+# Creating a base class from which all models will inherit
 Base = declarative_base()
 
-# Створення сесії для взаємодії з базою даних
+# Create a session to interact with the database
 Session = sessionmaker()
 
 class Client(Base):
@@ -47,81 +47,43 @@ class ModelClient:
             print(f"Error when adding a client: {str(e)}")
             return False  # Returns False if insertion fails
 
-    # def add_client(self, client_id, name, surname, email):
-    #     c = self.conn.cursor()
-    #     try:
-    #         c.execute('INSERT INTO client (client_id, name, surname, email) VALUES (%s, %s, %s, %s)',
-    #                   (client_id, name, surname, email))
-    #         self.conn.commit()
-    #         return True  # Returns True if the update was successful
-    #     except Exception as e:
-    #         self.conn.rollback()
-    #         print(f"Error when adding a client: {str(e)}")
-    #         return False  # Returns False if insertion fails
 
     def update_client(self, client_id, name, surname, email):
         try:
-            # Отримуємо бронювання з бази даних за його унікальним ідентифікатором
+            # Receive a booking from the database by its unique identifier
             client = self.session.query(Client).filter_by(client_id=client_id).first()
 
             if client:
-                # Оновлюємо дані про бронювання
+                # Update booking information
                 client.name = name
                 client.surname = surname
                 client.email = email
 
                 self.session.commit()
-                return True  # Повертає True у випадку успішного оновлення
+                return True  # Returns True if the update is successful
             else:
-                return False  # Повертає False, якщо бронювання не знайдено
+                return False  # Returns False if no reservation is found
         except Exception as e:
             self.session.rollback()
             print(f"Error when updating the client: {str(e)}")
             return False   # Returns False if insertion fails
 
-    # def update_client(self, client_id, name, surname, email):
-    #     c = self.conn.cursor()
-    #     try:
-    #         c.execute('UPDATE client SET name=%s, surname=%s, email=%s WHERE client_id=%s',
-    #                   (name, surname, email, client_id))
-    #         self.conn.commit()
-    #         return True  # Returns True if the update was successful
-    #     except Exception as e:
-    #         self.conn.rollback()
-    #         print(f"Error when updating the client: {str(e)}")
-    #         return False   # Returns False if insertion fails
-
-
     def delete_client(self, client_id):
         try:
-            # Отримуємо бронювання з бази даних за його унікальним ідентифікатором
+            # Receive a booking from the database by its unique identifier
             client = self.session.query(Client).filter_by(client_id=client_id).first()
 
-            # Перевіряємо, чи бронювання існує у базі даних
+            # Check if the reservation exists in the database
             if client:
-                # Видаляємо бронювання з сесії SQLAlchemy
                 self.session.delete(client)
                 self.session.commit()
-                return True  # Повертає True у випадку успішного видалення
+                return True  # Returns True if the deletion is successful
             else:
-                return False  # Повертає False, якщо бронювання не знайдено
+                return False  # Returns False if no reservation is found
         except Exception as e:
             self.session.rollback()
             print(f"An error when deleting a client breaks the foreign key restriction: {str(e)}")
             return False   # Returns False if insertion fails
-
-    # def delete_client(self, client_id):
-    #     c = self.conn.cursor()
-    #     try:
-    #         c.execute('DELETE FROM client WHERE client_id=%s', (client_id,))
-    #         self.conn.commit()
-    #         return True  # Returns True if the update was successful
-    #     except Exception as e:
-    #         self.conn.rollback()
-    #         print(f"An error when deleting a client breaks the foreign key restriction: {str(e)}")
-    #         return False   # Returns False if insertion fails
-
-
 
 
     def get_all_clients(self):

@@ -3,20 +3,19 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# З'єднання з базою даних
+# Connecting to the database
 DATABASE_URL = 'postgresql://postgres:1@localhost:5432/postgres'
 engine = create_engine(DATABASE_URL)
 
-# Створення базового класу, від якого будуть наслідуватися всі моделі
+# Creating a base class from which all models will inherit
 Base = declarative_base()
 
-# Створення сесії для взаємодії з базою даних
+# Create a session to interact with the database
 Session = sessionmaker()
 
 
 class BookingTicket(Base):
     __tablename__ = 'booking_ticket'
-    #__table_args__ = {'bind': engine}
     booking_id = Column(Integer, primary_key=True)
     client_id = Column(Integer, nullable=False)
     room_number = Column(Integer, nullable=False)
@@ -29,38 +28,9 @@ class BookingTicket(Base):
 class ModelBookingTicket:
     def __init__(self, db_model):
         self.conn = db_model.conn
-        #self.session = db_model.session
         self.engine = create_engine(DATABASE_URL)
-        #self.session = Session()
-        #self.engine = db_model.engine
-        #Session = sessionmaker()
         self.session = Session.configure(bind=self.engine)
         self.session = Session()
-    # def add_booking_ticket(self, booking_id, client_id, room_number, booking_start_date, booking_end_date, price):
-    #     c = self.conn.cursor()
-    #     try:
-    #         # Check if client_id and room_number match parent tables
-    #         c.execute('SELECT 1 FROM client WHERE client_id = %s', (client_id,))
-    #         client_exists = c.fetchone()
-    #
-    #         c.execute('SELECT 1 FROM room WHERE room_number = %s', (room_number,))
-    #         room_exists = c.fetchone()
-    #
-    #         if not client_exists or not room_exists:
-    #             # Return an exception notification and throw an error
-    #             return False  # Or throw an exception to process it further
-    #         else:
-    #             # All checks have passed, insert into booking_ticket
-    #             c.execute(
-    #                 'INSERT INTO booking_ticket (booking_id, client_id, room_number, '
-    #                 'booking_start_date, booking_end_date, price) VALUES (%s, %s, %s, %s, %s, %s)',
-    #                 (booking_id, client_id, room_number, booking_start_date, booking_end_date, price))
-    #             self.conn.commit()
-    #             return True
-    #     except Exception as e:
-    #         self.conn.rollback()
-    #         print(f"Error when adding a booking: {str(e)}")
-    #         return False
 
     def add_booking_ticket(self, booking_id, client_id, room_number, booking_start_date, booking_end_date, price):
         try:
@@ -84,12 +54,12 @@ class ModelBookingTicket:
 
     def update_booking_ticket(self, booking_id, client_id, room_number, booking_start_date, booking_end_date, price):
         try:
-            # Отримуємо бронювання з бази даних за його унікальним ідентифікатором
+            # Receive a booking from the database by its unique identifier
             booking = self.session.query(BookingTicket).filter_by(booking_id=booking_id).first()
 
-            # Перевіряємо, чи бронювання існує у базі даних
+            # Check if the reservation exists in the database
             if booking:
-                # Оновлюємо дані про бронювання
+                # Update booking information
                 booking.client_id = client_id
                 booking.room_number = room_number
                 booking.booking_start_date = booking_start_date
@@ -97,61 +67,31 @@ class ModelBookingTicket:
                 booking.price = price
 
                 self.session.commit()
-                return True  # Повертає True у випадку успішного оновлення
+                return True  # Returns True if the update is successful
             else:
-                return False  # Повертає False, якщо бронювання не знайдено
+                return False  # Returns False if no reservation is found
         except Exception as e:
             self.session.rollback()
             print(f"Error when updating a reservation: {str(e)}")
-            return False  # Повертає False у випадку помилки під час оновлення
+            return False  # Returns False if an error occurs during the update
 
-
-    # def update_booking_ticket(self, booking_id, client_id, room_number, booking_start_date, booking_end_date, price):
-    #     c = self.conn.cursor()
-    #     try:
-    #         # Attempting to update a record
-    #         c.execute('UPDATE booking_ticket SET client_id=%s, room_number=%s, booking_start_date=%s, '
-    #                   'booking_end_date=%s, price=%s WHERE booking_id=%s',
-    #                   (client_id, room_number, booking_start_date, booking_end_date, price, booking_id))
-    #         self.conn.commit()
-    #         return True  # Returns True if the update was successful
-    #     except Exception as e:
-    #         # Handling an error if the update failed
-    #         self.conn.rollback()
-    #         print(f"Error when updating a reservation: {str(e)}")
-    #         return False   # Returns False if insertion fails
 
     def delete_booking_ticket(self, booking_id):
         try:
-            # Отримуємо бронювання з бази даних за його унікальним ідентифікатором
+            # Receive a booking from the database by its unique identifier
             booking = self.session.query(BookingTicket).filter_by(booking_id=booking_id).first()
 
-            # Перевіряємо, чи бронювання існує у базі даних
+            # Check if the reservation exists in the database
             if booking:
-                # Видаляємо бронювання з сесії SQLAlchemy
                 self.session.delete(booking)
                 self.session.commit()
-                return True  # Повертає True у випадку успішного видалення
+                return True  # Returns True if the deletion is successful
             else:
-                return False  # Повертає False, якщо бронювання не знайдено
+                return False  # Returns False if no reservation is found
         except Exception as e:
             self.session.rollback()
             print(f"Error when deleting a reservation: {str(e)}")
-            return False  # Повертає False у випадку помилки під час видалення
-
-    # def delete_booking_ticket(self, booking_id):
-    #     c = self.conn.cursor()
-    #     try:
-    #         # Attempting to update a record
-    #         c.execute('DELETE FROM booking_ticket WHERE booking_id=%s', (booking_id,))
-    #         self.conn.commit()
-    #         return True  # Returns True if the update was successful
-    #     except Exception as e:
-    #         # Handling an error in case the deletion failed
-    #         self.conn.rollback()
-    #         print(f"Error when deleting a reservation: {str(e)}")
-    #         return False   # Returns False if insertion fails
-
+            return False  # Returns False in case of an error during deletion
 
 
     def get_all_booking_tickets(self):

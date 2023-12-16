@@ -3,14 +3,14 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# З'єднання з базою даних
-DATABASE_URL = 'postgresql://postgres:1@localhost:5432/postgres'  # Приклад URL для PostgreSQL
+# Connecting to the database
+DATABASE_URL = 'postgresql://postgres:1@localhost:5432/postgres'
 engine = create_engine(DATABASE_URL)
 
-# Створення базового класу, від якого будуть наслідуватися всі моделі
+# Creating a base class from which all models will inherit
 Base = declarative_base()
 
-# Створення сесії для взаємодії з базою даних
+# Create a session to interact with the database
 Session = sessionmaker()
 
 
@@ -42,82 +42,43 @@ class ModelRoom:
             self.session.rollback()
             print(f"Error when adding a room: {str(e)}")
             return False   # Returns False if insertion fails
-    # def add_room(self, room_number, room_type):
-    #     c = self.conn.cursor()
-    #     try:
-    #         c.execute('INSERT INTO room (room_number ,room_type) VALUES (%s, %s)', (room_number, room_type,))
-    #         self.conn.commit()
-    #         return True  # Returns True if the update was successful
-    #     except Exception as e:
-    #         self.conn.rollback()
-    #         print(f"Error when adding a room: {str(e)}")
-    #         return False   # Returns False if insertion fails
-
 
 
     def update_room(self, room_number, room_type):
         try:
-            # Отримуємо бронювання з бази даних за його унікальним ідентифікатором
+            # Receive a booking from the database by its unique identifier
             room = self.session.query(Room).filter_by(room_number=room_number).first()
 
             if room:
-                # Оновлюємо дані про бронювання
+                # Update booking information
                 room.name = room_number
                 room.surname = room_type
 
                 self.session.commit()
-                return True  # Повертає True у випадку успішного оновлення
+                return True  # Returns True if the update is successful
             else:
-                return False  # Повертає False, якщо бронювання не знайдено
+                return False  # Returns False if no reservation is found
         except Exception as e:
             self.session.rollback()
             print(f"Error when updating a room: {str(e)}")
             return False   # Returns False if insertion fails
 
-    # def update_room(self, room_number, room_type):
-    #     c = self.conn.cursor()
-    #     try:
-    #         c.execute('UPDATE room SET room_type=%s WHERE room_number=%s', (room_type, room_number))
-    #         self.conn.commit()
-    #         return True  # Returns True if the update was successful
-    #     except Exception as e:
-    #         self.conn.rollback()
-    #         print(f"Error when updating a room: {str(e)}")
-    #         return False   # Returns False if insertion fails
-
-
-
     def delete_room(self, room_number):
         try:
-            # Отримуємо бронювання з бази даних за його унікальним ідентифікатором
+            # Receive a booking from the database by its unique identifier
             room = self.session.query(Room).filter_by(room_number=room_number).first()
 
-            # Перевіряємо, чи бронювання існує у базі даних
+            # Check if the reservation exists in the database
             if room:
-                # Видаляємо бронювання з сесії SQLAlchemy
                 self.session.delete(room)
                 self.session.commit()
-                return True  # Повертає True у випадку успішного видалення
+                return True  # Returns True if the deletion is successful
             else:
-                return False  # Повертає False, якщо бронювання не знайдено
+                return False  # Returns False if no reservation is found
         except Exception as e:
             self.session.rollback()
             print(f"Error when deleting a room: {str(e)}")
             return False  # Returns False if insertion fails
-
-
-    # def delete_room(self, room_number):
-    #     c = self.conn.cursor()
-    #     try:
-    #         c.execute('DELETE FROM room WHERE room_number=%s', (room_number,))
-    #         self.conn.commit()
-    #         return True  # Returns True if the update was successful
-    #     except Exception as e:
-    #         self.conn.rollback()
-    #         print(f"Error when deleting a room: {str(e)}")
-    #         return False  # Returns False if insertion fails
-
-
 
     def get_all_rooms(self):
         c = self.conn.cursor()
